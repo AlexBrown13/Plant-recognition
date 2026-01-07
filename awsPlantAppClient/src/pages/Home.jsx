@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { api, auth } from '../utils/api';
-import './Home.css';
+import { useState, useEffect } from "react";
+import { api, auth } from "../utils/api";
+import "./Home.css";
 
 function Home() {
   const [image, setImage] = useState(null);
@@ -21,7 +21,7 @@ function Home() {
   }, [imagePreview]);
 
   const handleImageSelect = (file) => {
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       // Cleanup previous preview URL
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
@@ -32,7 +32,7 @@ function Home() {
       setError(null);
       setSaveSuccess(false);
     } else {
-      setError('Please select a valid image file');
+      setError("Please select a valid image file");
     }
   };
 
@@ -53,7 +53,7 @@ function Home() {
 
   const handleIdentify = async () => {
     if (!image) {
-      setError('Please select an image first');
+      setError("Please select an image first");
       return;
     }
 
@@ -65,7 +65,7 @@ function Home() {
       const result = await api.identifyPlant(image);
       setPlantInfo(result);
     } catch (err) {
-      setError(err.message || 'Failed to identify plant. Please try again.');
+      setError(err.message || "Failed to identify plant. Please try again.");
       setPlantInfo(null);
     } finally {
       setIsLoading(false);
@@ -74,7 +74,7 @@ function Home() {
 
   const handleSavePlant = async () => {
     if (!auth.isAuthenticated()) {
-      setError('Please login to save plants');
+      setError("Please login to save plants");
       return;
     }
 
@@ -90,7 +90,7 @@ function Home() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      setError(err.message || 'Failed to save plant. Please try again.');
+      setError(err.message || "Failed to save plant. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -100,7 +100,9 @@ function Home() {
     <div className="home-container">
       <div className="home-content">
         <h1 className="home-title">Identify Your Plant</h1>
-        <p className="home-subtitle">Upload or drop an image to discover what plant you have</p>
+        <p className="home-subtitle">
+          Upload or drop an image to discover what plant you have
+        </p>
 
         {/* Image Upload Area */}
         <div
@@ -152,22 +154,18 @@ function Home() {
             onClick={handleIdentify}
             disabled={isLoading}
           >
-            {isLoading ? 'Identifying...' : 'Identify Plant'}
+            {isLoading ? "Identifying..." : "Identify Plant"}
           </button>
         )}
 
         {/* Error Message */}
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
         {/* Plant Information */}
         {plantInfo && (
           <div className="plant-info-card">
-            <h2 className="plant-name">{plantInfo.name || 'Plant Name'}</h2>
-            
+            <h2 className="plant-name">{plantInfo.name || "Plant Name"}</h2>
+
             {plantInfo.watering && (
               <div className="info-section">
                 <h3>💧 Watering Instructions</h3>
@@ -195,11 +193,15 @@ function Home() {
                 onClick={handleSavePlant}
                 disabled={isSaving || saveSuccess}
               >
-                {isSaving ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save to My Plants'}
+                {isSaving
+                  ? "Saving..."
+                  : saveSuccess
+                  ? "✓ Saved!"
+                  : "Save to My Plants"}
               </button>
             ) : (
               <p className="login-prompt">
-                <a href="/login">Login</a> to save this plant to your collection
+                <a href="/login">Login</a>
               </p>
             )}
           </div>
@@ -210,4 +212,3 @@ function Home() {
 }
 
 export default Home;
-
