@@ -44,6 +44,11 @@ function Header() {
 
           {user ? (
             <>
+              <img
+                src={user.picture}
+                alt={user.name}
+                className="profile-icon"
+              />
               <button
                 className="btn-logout"
                 onClick={() => {
