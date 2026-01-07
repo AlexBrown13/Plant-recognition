@@ -1,38 +1,12 @@
 import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
-
-import { GoogleLogin } from "@react-oauth/google";
 import { useGoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
-
-//import { auth } from "../utils/api";
 import "./Header.css";
 
 function Header() {
   const navigate = useNavigate();
   const { user, logout, login } = useContext(UserContext);
-
-  //const isAuthenticated = auth.isAuthenticated();
-
-  const handleMyPlantsClick = (e) => {
-    if (!isAuthenticated) {
-      e.preventDefault();
-      navigate("/login");
-    }
-  };
-
-  // const googleLogin = useGoogleLogin({
-  //   onSuccess: (credentialResponse) => {
-  //     // Decode token to get user info
-  //     console.log("credentialResponse: " + credentialResponse);
-  //     const userData = jwtDecode(credentialResponse.credential);
-  //     login(userData, credentialResponse.credential); // update context
-  //   },
-  //   onError: () => {
-  //     alert("Google Login Failed");
-  //   },
-  // });
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {

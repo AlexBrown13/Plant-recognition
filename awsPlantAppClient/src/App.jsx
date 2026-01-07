@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MyPlants from "./pages/MyPlants";
 import "./App.css";
