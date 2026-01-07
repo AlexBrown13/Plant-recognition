@@ -3,7 +3,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'https://your-api-g
 
 // Get JWT token from localStorage
 const getToken = () => {
-  return localStorage.getItem("jwt_token");
+  return localStorage.getItem("googleIdToken");
+  //return localStorage.getItem("jwt_token");
 };
 
 // Make API request with authentication
@@ -92,17 +93,31 @@ export const api = {
   },
 };
 
-// Auth utilities
+// Old Auth utilities
+// export const auth = {
+//   isAuthenticated: () => {
+//     return !!localStorage.getItem("jwt_token");
+//   },
+
+//   setToken: (token) => {
+//     localStorage.setItem("jwt_token", token);
+//   },
+
+//   removeToken: () => {
+//     localStorage.removeItem("jwt_token");
+//   },
+// };
+
 export const auth = {
   isAuthenticated: () => {
-    return !!localStorage.getItem("jwt_token");
+    return !!localStorage.getItem("googleIdToken");
   },
 
   setToken: (token) => {
-    localStorage.setItem("jwt_token", token);
+    localStorage.setItem("googleIdToken", token);
   },
 
   removeToken: () => {
-    localStorage.removeItem("jwt_token");
+    localStorage.removeItem("googleIdToken");
   },
 };

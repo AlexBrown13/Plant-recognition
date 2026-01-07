@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api, auth } from '../utils/api';
-import './MyPlants.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { api, auth } from "../utils/api";
+import "./MyPlants.css";
 
 function MyPlants() {
   const [plants, setPlants] = useState([]);
@@ -11,7 +11,7 @@ function MyPlants() {
 
   useEffect(() => {
     if (!auth.isAuthenticated()) {
-      navigate('/login');
+      //navigate("/login");
       return;
     }
 
@@ -26,7 +26,7 @@ function MyPlants() {
       const data = await api.getMyPlants();
       setPlants(Array.isArray(data.plants) ? data.plants : data || []);
     } catch (err) {
-      setError(err.message || 'Failed to load your plants. Please try again.');
+      setError(err.message || "Failed to load your plants. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +59,11 @@ function MyPlants() {
           <div className="empty-state">
             <div className="empty-icon">🌱</div>
             <h2>No plants saved yet</h2>
-            <p>Start identifying plants on the home page and save them to your collection!</p>
-            <button onClick={() => navigate('/')} className="btn-primary">
+            <p>
+              Start identifying plants on the home page and save them to your
+              collection!
+            </p>
+            <button onClick={() => navigate("/")} className="btn-primary">
               Go to Home
             </button>
           </div>
@@ -69,11 +72,17 @@ function MyPlants() {
             {plants.map((plant, index) => (
               <div key={plant.id || index} className="plant-card">
                 {plant.imageUrl && (
-                  <img src={plant.imageUrl} alt={plant.name} className="plant-card-image" />
+                  <img
+                    src={plant.imageUrl}
+                    alt={plant.name}
+                    className="plant-card-image"
+                  />
                 )}
                 <div className="plant-card-content">
-                  <h3 className="plant-card-name">{plant.name || 'Unknown Plant'}</h3>
-                  
+                  <h3 className="plant-card-name">
+                    {plant.name || "Unknown Plant"}
+                  </h3>
+
                   {plant.watering && (
                     <div className="plant-card-info">
                       <strong>💧 Watering:</strong>
@@ -111,4 +120,3 @@ function MyPlants() {
 }
 
 export default MyPlants;
-

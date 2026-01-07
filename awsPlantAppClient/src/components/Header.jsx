@@ -21,12 +21,22 @@ function Header() {
 
       // Save user + token
       login(userData, tokenResponse.access_token);
-      navigate("/");
+      //navigate("/");
     },
     onError: () => {
       alert("Google Login Failed");
     },
   });
+
+  const handleMyPlantsClick = () => {
+    if (!user) {
+      //navigate("/login"); // redirect if not logged in
+      googleLogin();
+      navigate("/my-plants");
+    } else {
+      navigate("/my-plants");
+    }
+  };
 
   return (
     <header className="header">
@@ -38,7 +48,11 @@ function Header() {
           <Link to="/" className="nav-link">
             Home
           </Link>
-          <Link to="/my-plants" className="nav-link">
+          <Link
+            to="/my-plants"
+            onClick={handleMyPlantsClick}
+            className="nav-link"
+          >
             My Plants
           </Link>
 

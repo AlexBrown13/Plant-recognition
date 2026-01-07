@@ -14,7 +14,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginGoogle />} />
+            {/* <Route path="/login" element={<LoginGoogle />} /> */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/my-plants" element={<MyPlants />} />
           </Routes>
