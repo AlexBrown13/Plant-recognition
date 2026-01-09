@@ -59,7 +59,7 @@ export const handler = async (event) => {
     // ===== 4) save metadata to DynamoDB =====
     await ddb.send(
       new PutCommand({
-        TableName: process.env.PLANTS_TABLE || "PlantsRecognition",
+        TableName: process.env.PLANTS_TABLE,
         Item: {
           userId,                      // PK (S)
           perenualId: Number(perenualId), // SK (N)
