@@ -1,5 +1,6 @@
 // API configuration and utility functions
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'https://your-api-gateway-url.execute-api.region.amazonaws.com';
+//const API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
 
 // Get JWT token from localStorage
 const getToken = () => {
@@ -106,3 +107,16 @@ export const auth = {
     localStorage.removeItem("googleIdToken");
   },
 };
+
+// Save user to DynamoDB
+// export const saveUser = async (userData) => {
+//   console.log("\nsaveUser\n");
+//   return apiRequest(`${API_SAVE_USER}/prod/save-user`, {
+//     method: "POST",
+//     body: JSON.stringify({
+//       sub: userData.sub,
+//       name: userData.name,
+//       email: userData.email,
+//     }),
+//   });
+// };
