@@ -34,7 +34,7 @@ const apiRequest = async (endpoint, options = {}) => {
   return response.json();
 };
 
-// API functions
+//API functions
 export const api = {
   // Authentication
   login: async (email, password) => {
@@ -92,21 +92,6 @@ export const api = {
     });
   },
 };
-
-// Old Auth utilities
-// export const auth = {
-//   isAuthenticated: () => {
-//     return !!localStorage.getItem("jwt_token");
-//   },
-
-//   setToken: (token) => {
-//     localStorage.setItem("jwt_token", token);
-//   },
-
-//   removeToken: () => {
-//     localStorage.removeItem("jwt_token");
-//   },
-// };
 
 export const auth = {
   isAuthenticated: () => {

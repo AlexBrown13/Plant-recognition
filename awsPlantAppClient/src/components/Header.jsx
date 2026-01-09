@@ -21,7 +21,6 @@ function Header() {
 
       // Save user + token
       login(userData, tokenResponse.access_token);
-      //navigate("/");
     },
     onError: () => {
       alert("Google Login Failed");
