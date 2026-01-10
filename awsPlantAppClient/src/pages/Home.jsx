@@ -51,25 +51,54 @@ function Home() {
     handleImageSelect(file);
   };
 
+  // const handleIdentify = async () => {
+  //   if (!image) {
+  //     setError('Please select an image first');
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   setError(null);
+  //   setSaveSuccess(false);
+
+  //   try {
+  //     const result = await api.identifyPlant(image);
+  //     setPlantInfo(result);
+  //   } catch (err) {
+  //     setError(err.message || 'Failed to identify plant. Please try again.');
+  //     setPlantInfo(null);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleIdentify = async () => {
-    if (!image) {
-      setError("Please select an image first");
-      return;
-    }
+    // if (!image) {
+    //   setError("Please select an image first");
+    //   return;
+    // }
 
-    setIsLoading(true);
-    setError(null);
-    setSaveSuccess(false);
+    // setIsLoading(true);
+    // setError(null);
+    // setSaveSuccess(false);
 
-    try {
-      const result = await api.identifyPlant(image);
-      setPlantInfo(result);
-    } catch (err) {
-      setError(err.message || "Failed to identify plant. Please try again.");
-      setPlantInfo(null);
-    } finally {
-      setIsLoading(false);
-    }
+    // try {
+    //   const result = await api.identifyPlant(image);
+    //   setPlantInfo(result);
+    // } catch (err) {
+    //   setError(err.message || "Failed to identify plant. Please try again.");
+    //   setPlantInfo(null);
+    // } finally {
+    //   setIsLoading(false);
+    // }
+  const { plant, imageBase64 } = await identifyPlant(selectedFile);
+  setPlant(plant);
+  setImageBase64(imageBase64);
+  };
+
+const handleSave = async () => {
+  await savePlant(plant, imageBase64);
+  alert("Saved!");
   };
 
   const handleSavePlant = async () => {
