@@ -52,26 +52,27 @@ function Home() {
   };
 
   const handleIdentify = async () => {
+  const [imageBase64, setImageBase64] = useState(null);
     if (!image) {
-      setError("Please select an image first");
-      return;
-    }
+    setError("Please select an image first");
+    return;
+  }
 
-    setIsLoading(true);
-    setError(null);
-    setSaveSuccess(false);
+  setIsLoading(true);
+  setError(null);
+  setSaveSuccess(false);
 
-    try {
-      const result = await api.identifyPlant(image);
-      setPlantInfo(result);
-    } catch (err) {
-      setError(err.message || "Failed to identify plant. Please try again.");
-      setPlantInfo(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  try {
+    const { plant, imageBase64 } = await api.identifyPlant(image);
+    setPlantInfo(plant);
+    setImageBase64(imageBase64); // 👈 needed for /save
+  } catch (err) {
+    setError(err.message || "Failed to identify plant. Please try again.");
+    setPlantInfo(null);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleSavePlant = async () => {
     if (!auth.isAuthenticated()) {
       setError("Please login to save plants");
