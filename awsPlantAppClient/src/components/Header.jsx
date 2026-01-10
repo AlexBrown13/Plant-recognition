@@ -17,7 +17,7 @@ function Header() {
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
             headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
+              Authorization: `Bearer ${tokenResponse.access_token}`, // tokenResponse.id_token
             },
           }
         );

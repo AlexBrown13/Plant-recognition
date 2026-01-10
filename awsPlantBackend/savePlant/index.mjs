@@ -13,28 +13,39 @@ export const handler = async (event) => {
   try {
     // ===== 0) auth: read bearer token =====
 
-    // const auth = event.headers?.authorization || event.headers?.Authorization;
-    // const idToken = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+    const auth = event.headers?.authorization || event.headers?.Authorization;
+    const idToken = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 
-    // if (!idToken) return resp(401, { error: "missing Authorization Bearer token" });
+    if (!idToken)
+      return resp(401, { error: "missing Authorization Bearer token" });
 
     // //auth: verify token (simple)
     // // returns { sub, email, aud, ... } if valid
-    // const tokenInfoRes = await fetch(
-    //   `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`
-    // );
-    // const tokenInfo = await tokenInfoRes.json();
+    const tokenInfoRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(
+        idToken
+      )}`
+    );
 
-    // if (!tokenInfoRes.ok) {
-    //   return resp(401, { error: "invalid token", tokenInfo });
-    // }
+    const tokenInfo = await tokenInfoRes.json();
 
-    const userId = "test-user";
-    //const userId = `google_${tokenInfo.sub}`;
+    if (!tokenInfoRes.ok) {
+      return resp(401, { error: "invalid token", tokenInfo });
+    }
+
+    //const userId = "test-user";
+    const userId = `google_${tokenInfo.sub}`;
 
     // ===== 1) parse body =====
     const body = JSON.parse(event.body || "{}");
-    const { scientificName, commonName, perenualId, watering, sunlight, imageBase64 } = body;
+    const {
+      scientificName,
+      commonName,
+      perenualId,
+      watering,
+      sunlight,
+      imageBase64,
+    } = body;
 
     if (!imageBase64) return resp(400, { error: "missing imageBase64" });
     if (perenualId === undefined || perenualId === null) {
@@ -45,7 +56,9 @@ export const handler = async (event) => {
     const imageBuffer = Buffer.from(imageBase64, "base64");
 
     // ===== 3) upload image to S3 =====
-    const imageKey = `${userId}/${Date.now()}-${Math.random().toString(16).slice(2)}.jpg`;
+    const imageKey = `${userId}/${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}.jpg`;
 
     await s3.send(
       new PutObjectCommand({
@@ -61,13 +74,13 @@ export const handler = async (event) => {
       new PutCommand({
         TableName: process.env.PLANTS_TABLE,
         Item: {
-          userId,                      // PK (S)
+          userId, // PK (S)
           perenualId: Number(perenualId), // SK (N)
           scientificName: scientificName ?? null,
           commonName: commonName ?? null,
           watering: watering ?? null,
           sunlight: Array.isArray(sunlight) ? sunlight : [],
-          imageKey,                    // store S3 key (NOT base64)
+          imageKey, // store S3 key (NOT base64)
           createdAt: new Date().toISOString(),
         },
       })
