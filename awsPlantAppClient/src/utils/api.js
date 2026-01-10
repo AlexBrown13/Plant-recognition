@@ -53,30 +53,68 @@ export const api = {
   },
 
   // Plant identification
-  identifyPlant: async (imageFile) => {
-    const token = getToken();
-    // const formData = new FormData();
-    // formData.append("image", imageFile);
+  // identifyPlant: async (imageFile) => {
+  //   const token = getToken();
+  //   // const formData = new FormData();
+  //   // formData.append("image", imageFile);
 
-    const response = await fetch(`${API_BASE_URL}/identify`, {
-      method: "POST",
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-      body: formData,
+  //   const response = await fetch(`${API_BASE_URL}/identify`, {
+  //     method: "POST",
+  //     headers: {
+  //       Authorization: token ? `Bearer ${token}` : "",
+  //     },
+  //     body: formData,
+  //   });
+
+  //   if (!response.ok) {
+  //     const error = await response
+  //       .json()
+  //       .catch(() => ({ message: "Request failed" }));
+  //     throw new Error(
+  //       error.message || `HTTP error! status: ${response.status}`
+  //     );
+  //   }
+
+  //   return response.json();
+  // },
+
+  identifyPlant: async (imageFile) => {
+  // Convert image file to base64
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // Remove the "data:image/...;base64," prefix
+        const base64String = reader.result.split(",")[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
     });
 
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(
-        error.message || `HTTP error! status: ${response.status}`
-      );
-    }
+  const base64 = await fileToBase64(imageFile);
 
-    return response.json();
-  },
+  const response = await fetch(`${API_BASE_URL}/identify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain", // backend expects raw text
+      // ✅ remove Authorization completely
+    },
+    body: base64,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      message: "Request failed",
+    }));
+    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+  }
+
+  return {
+    plant: await response.json(),
+    imageBase64: base64, // so Home.jsx can save it later
+  };
+},
 
   // Save plant
   savePlant: async (plantData) => {

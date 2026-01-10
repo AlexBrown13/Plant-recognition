@@ -10,6 +10,7 @@ function Home() {
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [imageBase64, setImageBase64] = useState(null);
 
   // Cleanup image preview URL on unmount or when image changes
   useEffect(() => {
@@ -51,9 +52,8 @@ function Home() {
     handleImageSelect(file);
   };
 
-  const handleIdentify = async () => {
-  const [imageBase64, setImageBase64] = useState(null);
-    if (!image) {
+const handleIdentify = async () => {
+  if (!image) {
     setError("Please select an image first");
     return;
   }
@@ -65,7 +65,7 @@ function Home() {
   try {
     const { plant, imageBase64 } = await api.identifyPlant(image);
     setPlantInfo(plant);
-    setImageBase64(imageBase64); // 👈 needed for /save
+    setImageBase64(imageBase64); // ✅ now safe to use
   } catch (err) {
     setError(err.message || "Failed to identify plant. Please try again.");
     setPlantInfo(null);
@@ -73,29 +73,42 @@ function Home() {
     setIsLoading(false);
   }
 };
+
   const handleSavePlant = async () => {
-    if (!auth.isAuthenticated()) {
-      setError("Please login to save plants");
-      return;
-    }
+  // Check if a plant has been identified
+  if (!plantInfo) {
+    setError("No plant to save. Please identify a plant first.");
+    return;
+  }
 
-    if (!plantInfo) {
-      return;
-    }
+  // For now, ignore auth (or keep your auth check if you want)
+  // if (!auth.isAuthenticated()) {
+  //   setError("Please login to save plants");
+  //   return;
+  // }
 
-    setIsSaving(true);
-    setError(null);
+  // Ensure we have the base64 image from identify
+  if (!imageBase64) {
+    setError("No image available to save.");
+    return;
+  }
 
-    try {
-      await api.savePlant(plantInfo);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      setError(err.message || "Failed to save plant. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  setIsSaving(true);
+  setError(null);
+
+  try {
+    // Pass both plant info and base64 image to the API
+    await api.savePlant(plantInfo, imageBase64);
+
+    setSaveSuccess(true);
+    // Automatically reset success after 3 seconds
+    setTimeout(() => setSaveSuccess(false), 3000);
+  } catch (err) {
+    setError(err.message || "Failed to save plant. Please try again.");
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   return (
     <div className="home-container">
