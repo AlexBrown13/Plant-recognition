@@ -2,11 +2,11 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'https://your-api-gateway-url.execute-api.region.amazonaws.com';
 //const API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
 
-// Get JWT token from localStorage
-const getToken = () => {
-  return localStorage.getItem("googleIdToken");
-  //return localStorage.getItem("jwt_token");
-};
+// // Get JWT token from localStorage
+// const getToken = () => {
+//   return localStorage.getItem("googleIdToken");
+//   //return localStorage.getItem("jwt_token");
+// };
 
 // Make API request with authentication
 const apiRequest = async (endpoint, options = {}) => {
@@ -55,8 +55,8 @@ export const api = {
   // Plant identification
   identifyPlant: async (imageFile) => {
     const token = getToken();
-    const formData = new FormData();
-    formData.append("image", imageFile);
+    // const formData = new FormData();
+    // formData.append("image", imageFile);
 
     const response = await fetch(`${API_BASE_URL}/identify`, {
       method: "POST",
