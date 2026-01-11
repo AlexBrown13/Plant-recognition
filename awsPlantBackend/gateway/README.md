@@ -69,6 +69,7 @@ configure cors:
 
 ```json
 {
+  "userId": "test-user",
   "scientificName": "Epipremnum pinnatum",
   "commonName": "Pothos",
   "perenualId": 2773,
