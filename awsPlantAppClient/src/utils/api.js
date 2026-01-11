@@ -19,26 +19,26 @@ function fileToBase64(file) {
 }
 
 
-export async function identifyPlant(imageFile) {
-  const base64 = await fileToBase64(imageFile);
+// export async function identifyPlant(imageFile) {
+//   const base64 = await fileToBase64(imageFile);
 
-  const res = await fetch(`${API_BASE_URL}/identify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain"
-    },
-    body: base64
-  });
+//   const res = await fetch(`${API_BASE_URL}/identify`, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "text/plain"
+//     },
+//     body: base64
+//   });
 
-  if (!res.ok) {
-    throw new Error("Identify failed");
-  }
+//   if (!res.ok) {
+//     throw new Error("Identify failed");
+//   }
 
-  return {
-    plant: await res.json(),
-    imageBase64: base64   // IMPORTANT: keep for save
-  };
-}
+//   return {
+//     plant: await res.json(),
+//     imageBase64: base64   // IMPORTANT: keep for save
+//   };
+// }
 
 // Make API request with authentication
 const apiRequest = async (endpoint, options = {}) => {
