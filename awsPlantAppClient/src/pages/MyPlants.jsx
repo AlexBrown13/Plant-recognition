@@ -1,41 +1,44 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, auth } from "../utils/api";
+import { getMyPlants } from "../utils/api";
 import "./MyPlants.css";
 
-function MyPlants() {
+export default function MyPlants() {
   const [plants, setPlants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!auth.isAuthenticated()) {
-      //navigate("/login");
+    const token = localStorage.getItem("google_id_token");
+    if (!token) {
+      navigate("/login"); // your google login page
       return;
     }
 
-    fetchPlants();
-  }, [navigate]);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const fetchPlants = async () => {
+  async function load() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await api.getMyPlants();
-      setPlants(Array.isArray(data.plants) ? data.plants : data || []);
-    } catch (err) {
-      setError(err.message || "Failed to load your plants. Please try again.");
+      const data = await getMyPlants();
+      const list = Array.isArray(data?.plants) ? data.plants : [];
+      setPlants(list);
+    } catch (e) {
+      setError(e?.message || "failed to load plants");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   if (isLoading) {
     return (
       <div className="my-plants-container">
-        <div className="loading">Loading your plants...</div>
+        <div className="loading">loading…</div>
       </div>
     );
   }
@@ -44,79 +47,63 @@ function MyPlants() {
     <div className="my-plants-container">
       <div className="my-plants-content">
         <h1 className="my-plants-title">My Plants</h1>
-        <p className="my-plants-subtitle">Your saved plant collection</p>
 
         {error && (
           <div className="error-message">
             {error}
-            <button onClick={fetchPlants} className="btn-retry">
-              Retry
+            <button onClick={load} className="btn-retry">retry</button>
+          </div>
+        )}
+
+        {!error && plants.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">🌱</div>
+            <h2>no plants yet</h2>
+            <button onClick={() => navigate("/")} className="btn-primary">
+              go identify
             </button>
           </div>
         )}
 
-        {plants.length === 0 && !error ? (
-          <div className="empty-state">
-            <div className="empty-icon">🌱</div>
-            <h2>No plants saved yet</h2>
-            <p>
-              Start identifying plants on the home page and save them to your
-              collection!
-            </p>
-            <button onClick={() => navigate("/")} className="btn-primary">
-              Go to Home
-            </button>
-          </div>
-        ) : (
-          <div className="plants-grid">
-            {plants.map((plant, index) => (
-              <div key={plant.id || index} className="plant-card">
-                {plant.imageUrl && (
-                  <img
-                    src={plant.imageUrl}
-                    alt={plant.name}
-                    className="plant-card-image"
-                  />
+        <div className="plants-grid">
+          {plants.map((p) => {
+            const title = p.commonName || p.scientificName || "unknown";
+            const subtitle =
+              p.commonName && p.scientificName ? p.scientificName : null;
+
+            return (
+              <div key={`${p.perenualId ?? ""}-${p.imageKey ?? Math.random()}`} className="plant-card">
+                {p.imageUrl ? (
+                  <img src={p.imageUrl} alt={title} className="plant-card-image" />
+                ) : (
+                  <div className="plant-card-image placeholder">no image</div>
                 )}
+
                 <div className="plant-card-content">
-                  <h3 className="plant-card-name">
-                    {plant.name || "Unknown Plant"}
-                  </h3>
+                  <h3 className="plant-card-name">{title}</h3>
+                  {subtitle && <div className="plant-card-sub">{subtitle}</div>}
 
-                  {plant.watering && (
+                  {p.watering && (
                     <div className="plant-card-info">
-                      <strong>💧 Watering:</strong>
-                      <p>{plant.watering}</p>
+                      <strong>💧 watering:</strong> {p.watering}
                     </div>
                   )}
 
-                  {plant.disease && (
+                  {Array.isArray(p.sunlight) && p.sunlight.length > 0 && (
                     <div className="plant-card-info">
-                      <strong>🦠 Disease Info:</strong>
-                      <p>{plant.disease}</p>
+                      <strong>☀️ sunlight:</strong> {p.sunlight.join(", ")}
                     </div>
                   )}
 
-                  {plant.care && (
-                    <div className="plant-card-info">
-                      <strong>🌿 Care:</strong>
-                      <p>{plant.care}</p>
-                    </div>
-                  )}
-
-                  {plant.savedAt && (
-                    <div className="plant-card-date">
-                      Saved on {new Date(plant.savedAt).toLocaleDateString()}
-                    </div>
+                  {p.perenualId != null && (
+                    <div className="plant-card-meta">perenualId: {p.perenualId}</div>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
-
-export default MyPlants;

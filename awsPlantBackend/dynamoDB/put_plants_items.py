@@ -52,3 +52,49 @@ if __name__ == "__main__":
     }
 
     put_plant_item(user_id, plant_data)
+
+
+
+
+
+# cat > save_plant.py <<'PY'
+# import boto3
+# from datetime import datetime, timezone
+
+# def put_plant_item(user_id, plant, table_name="PlantsRecognition", region="us-east-1"):
+#     dynamodb = boto3.resource("dynamodb", region_name=region)
+#     table = dynamodb.Table(table_name)
+
+#     if plant.get("perenualId") is None:
+#         raise ValueError("missing perenualId")
+#     if not plant.get("imageKey"):
+#         raise ValueError("missing imageKey")
+
+#     item = {
+#         "userId": user_id,
+#         "perenualId": int(plant["perenualId"]),
+#         "scientificName": plant.get("scientificName"),
+#         "commonName": plant.get("commonName"),
+#         "watering": plant.get("watering"),
+#         "sunlight": plant.get("sunlight", []),
+#         "imageKey": plant["imageKey"],
+#         "createdAt": plant.get("createdAt") or datetime.now(timezone.utc).isoformat(),
+#     }
+
+#     table.put_item(Item=item)
+#     print(f"saved plant perenualId={item['perenualId']} for userId={user_id}")
+
+# if __name__ == "__main__":
+#     user_id = "google_109876543210987654321"
+#     plant_data = {
+#         "perenualId": 223,
+#         "scientificName": "Rosa rubiginosa",
+#         "commonName": "Sweet Briar Rose",
+#         "watering": "Average",
+#         "sunlight": ["Full Sun"],
+#         "imageKey": "google_109876543210987654321/1767802223864-6f82c9279ae668.jpg"
+#     }
+#     put_plant_item(user_id, plant_data)
+# PY
+
+# python3 save_plant.py
