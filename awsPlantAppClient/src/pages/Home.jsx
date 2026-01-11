@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { identifyPlant, savePlant } from "../utils/api";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 const hasToken = () => !!localStorage.getItem("google_id_token");
@@ -159,13 +160,6 @@ export default function Home() {
               </div>
             )}
 
-            {plant.perenualId != null && (
-              <div className="info-section">
-                <h3>perenual id</h3>
-                <p>{plant.perenualId}</p>
-              </div>
-            )}
-
             {plant.watering && (
               <div className="info-section">
                 <h3>💧 watering</h3>
@@ -186,8 +180,9 @@ export default function Home() {
               </button>
             ) : (
               <p className="login-prompt">
-                login first to save (<a href="/login">google login</a>)
+                 login first to save (<Link to="/login">google login</Link>)
               </p>
+
             )}
           </div>
         )}
