@@ -13,7 +13,7 @@ function Header() {
     scope: "openid email profile",
     onSuccess: async (tokenResponse) => {
       const accessToken = tokenResponse.access_token;
-      console.log("accessToken", accessToken);
+
       const res = await fetch(`${API_SAVE_USER}/prod/save-user`, {
         method: "POST",
         headers: {

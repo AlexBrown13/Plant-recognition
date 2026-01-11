@@ -26,8 +26,6 @@ export const handler = async (event) => {
       return resp(401, "Invalid Authorization format");
     }
 
-    console.log("accessToken:", accessToken);
-
     // ===== 2) Verify token with Google (userinfo) =====
     const googleRes = await fetch(GOOGLE_USERINFO_URL, {
       headers: {
