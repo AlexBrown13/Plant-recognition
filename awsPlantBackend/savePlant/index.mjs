@@ -9,32 +9,40 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 const s3 = new S3Client({});
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
+const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+
 export const handler = async (event) => {
   try {
     // ===== 0) auth: read bearer token =====
 
     const auth = event.headers?.authorization || event.headers?.Authorization;
-    const idToken = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 
-    if (!idToken)
+    if (!auth)
       return resp(401, { error: "missing Authorization Bearer token" });
 
-    // //auth: verify token (simple)
-    // // returns { sub, email, aud, ... } if valid
-    const tokenInfoRes = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(
-        idToken
-      )}`
-    );
+    const accessToken = auth.startsWith("Bearer ") ? auth.slice(7) : null;
 
-    const tokenInfo = await tokenInfoRes.json();
-
-    if (!tokenInfoRes.ok) {
-      return resp(401, { error: "invalid token", tokenInfo });
+    if (!accessToken) {
+      return resp(401, "Invalid Authorization format");
     }
 
+    console.log("accessToken:", accessToken);
+
+    // ===== 2) Verify token with Google (userinfo) =====
+    const googleRes = await fetch(GOOGLE_USERINFO_URL, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!googleRes.ok) {
+      return resp(401, "Invalid Google token");
+    }
+
+    const userinfo = await googleRes.json();
+
     //const userId = "test-user";
-    const userId = `google_${tokenInfo.sub}`;
+    const userId = `google_${userinfo.sub}`;
 
     // ===== 1) parse body =====
     const body = JSON.parse(event.body || "{}");
