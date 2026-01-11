@@ -10,56 +10,24 @@ function Header() {
   const API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
 
   const googleLogin = useGoogleLogin({
+    scope: "openid email profile",
     onSuccess: async (tokenResponse) => {
-      try {
-        // Fetch user info using access_token
-        const res = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`, // tokenResponse.id_token
-            },
-          }
-        );
-
-        const userData = await res.json();
-
-        await saveUserToDynamo(userData);
-
-        // Save user + token
-        login(userData, tokenResponse.access_token);
-      } catch (err) {
-        console.error("Google login error:", err);
-        alert("Google Login Failed");
-      }
-    },
-    onError: () => {
-      alert("Google Login Failed");
-    },
-  });
-
-  // Function to save user
-  const saveUserToDynamo = async (userData) => {
-    try {
-      await fetch(`${API_SAVE_USER}/prod/save-user`, {
+      const accessToken = tokenResponse.access_token;
+      console.log("accessToken", accessToken);
+      const res = await fetch(`${API_SAVE_USER}/prod/save-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          sub: userData.sub,
-          name: userData.name,
-          email: userData.email,
-        }),
       });
-      console.log("User saved to DynamoDB");
-
-      //await api.saveUser(userData);
-      //console.log("User saved to DynamoDB");
-    } catch (err) {
-      console.error("Failed to save user:", err);
-    }
-  };
+      const userData = await res.json();
+      login(userData, accessToken);
+    },
+    onError: () => {
+      console.log("Google login failed");
+    },
+  });
 
   const handleMyPlantsClick = () => {
     if (!user) {
