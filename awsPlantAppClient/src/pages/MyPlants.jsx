@@ -95,9 +95,7 @@ export default function MyPlants() {
                     </div>
                   )}
 
-                  {p.perenualId != null && (
-                    <div className="plant-card-meta">perenualId: {p.perenualId}</div>
-                  )}
+                
                 </div>
               </div>
             );
