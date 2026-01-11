@@ -14,7 +14,7 @@ function Header() {
     onSuccess: async (tokenResponse) => {
       const accessToken = tokenResponse.access_token;
 
-      const res = await fetch(`${API_SAVE_USER}/prod/save-user`, {
+      const res = await fetch(`${API_SAVE_USER}prod/save-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
