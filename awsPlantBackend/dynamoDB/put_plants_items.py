@@ -1,72 +1,54 @@
-
 import boto3
+from datetime import datetime, timezone
 
-def put_plant_item(user_id, plant):
-    """
-    Save a plant for a specific user in PlantsRecognition table.
-    Table must have:
-    - PK: userId
-    - SK: plantId
-    """
-    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-    table = dynamodb.Table('PlantsRecognition')
+# writes plant METADATA only (no base64) to DynamoDB
+# table schema (our system):
+# - PK: userId (S)
+# - SK: perenualId (N)
+# image bytes go to S3; DB stores only imageKey (S3 key)
+
+def put_plant_item(user_id, plant, table_name="PlantsRecognition", region="us-east-1"):
+    dynamodb = boto3.resource("dynamodb", region_name=region)
+    table = dynamodb.Table(table_name)
+
+    if plant.get("perenualId") is None:
+        raise ValueError("missing perenualId")
+    if not plant.get("imageKey"):
+        raise ValueError("missing imageKey (store S3 key, not base64)")
 
     item = {
-        "userId": user_id,                      # Partition Key
-        "perenualId": plant["perenualId"],    # Sort Key
-        "scientificName": plant.get("scientificName", ""),
-        "commonName": plant.get("commonName", ""),
-        "watering": plant.get("watering", ""),
+        "userId": user_id,                      # PK (S)
+        "perenualId": int(plant["perenualId"]),  # SK (N)
+
+        "scientificName": plant.get("scientificName"),
+        "commonName": plant.get("commonName"),
+        "watering": plant.get("watering"),
         "sunlight": plant.get("sunlight", []),
-        "imageBase64": plant.get("imageBase64", "")
+
+        # pointer to the image in S3 (NOT base64)
+        "imageKey": plant["imageKey"],
+
+        # optional metadata
+        "createdAt": plant.get("createdAt") or datetime.now(timezone.utc).isoformat(),
     }
 
     table.put_item(Item=item)
-    print(f"Plant {plant['commonName']} inserted successfully ✅")
+    print(f"saved plant perenualId={item['perenualId']} for userId={user_id} ✅")
 
-# Example usage
-user_id = 'google_109876543210987654321'
 
-plant_data = {
-    "perenualId": 2,
-    "scientificName": "Rosa rubiginosa",
-    "commonName": "Sweet Briar Rose",
-    "watering": "Medium",
-    "sunlight": ["Full Sun"],
-    "imageBase64": "iVBORw0KGgoAAAANSUhEUgAA"
-}
-
+# example usage
 if __name__ == "__main__":
+    user_id = "google_109876543210987654321"
+
+    plant_data = {
+        "perenualId": 223,
+        "scientificName": "Rosa rubiginosa",
+        "commonName": "Sweet Briar Rose",
+        "watering": "Average",
+        "sunlight": ["Full Sun"],
+
+        # this should come from your save lambda after uploading to S3
+        "imageKey": "google_109876543210987654321/1767802223864-6f82c9279ae668.jpg"
+    }
+
     put_plant_item(user_id, plant_data)
-
-
-
-
-
-
-
-# import boto3
-
-# def put_plant_item(user_id):
-#     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-#     table = dynamodb.Table('PlantsRecognition')
-
-#     item = {
-#         "userId": user_id,
-#         "perenualId": "perenualId",                     # Partition Key
-#         "scientificName": "Rosa rubiginosa",
-#         "commonName": "Sweet Briar Rose",
-#         "watering": "Medium",
-#         "sunlight": ["Full Sun"],
-#         "imageBase64": "iVBORw0KGgoAAAANSUhEUgAA"  
-#     }
-
-#     table.put_item(Item=item)
-#     print("Item inserted successfully")
-
-# user_id = 'google_109876543210987654321'
-
-
-# if __name__ == "__main__":
-#     put_plant_item(user_id)
-
