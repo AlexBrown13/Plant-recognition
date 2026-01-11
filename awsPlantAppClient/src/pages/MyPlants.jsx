@@ -51,7 +51,9 @@ export default function MyPlants() {
         {error && (
           <div className="error-message">
             {error}
-            <button onClick={load} className="btn-retry">retry</button>
+            <button onClick={load} className="btn-retry">
+              retry
+            </button>
           </div>
         )}
 
@@ -72,16 +74,28 @@ export default function MyPlants() {
               p.commonName && p.scientificName ? p.scientificName : null;
 
             return (
-              <div key={`${p.perenualId ?? ""}-${p.imageKey ?? Math.random()}`} className="plant-card">
+              <div
+                key={`${p.perenualId ?? ""}-${p.imageKey ?? Math.random()}`}
+                className="plant-card"
+              >
                 {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={title} className="plant-card-image" />
+                  <img
+                    src={p.imageUrl}
+                    alt={title}
+                    className="plant-card-image"
+                  />
                 ) : (
                   <div className="plant-card-image placeholder">no image</div>
                 )}
 
                 <div className="plant-card-content">
                   <h3 className="plant-card-name">{title}</h3>
-                  {subtitle && <div className="plant-card-sub">{subtitle}</div>}
+
+                  {subtitle && (
+                    <div className="plant-card-info">
+                      <strong>🔬 scientific name:</strong> {subtitle}
+                    </div>
+                  )}
 
                   {p.watering && (
                     <div className="plant-card-info">
@@ -94,8 +108,6 @@ export default function MyPlants() {
                       <strong>☀️ sunlight:</strong> {p.sunlight.join(", ")}
                     </div>
                   )}
-
-                
                 </div>
               </div>
             );
