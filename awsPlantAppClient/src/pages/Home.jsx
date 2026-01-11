@@ -1,271 +1,188 @@
-import { useState, useEffect } from "react";
-import { api, auth } from "../utils/api";
+import { useEffect, useMemo, useState } from "react";
+import { identifyPlant, savePlant } from "../utils/api";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
-function Home() {
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [plantInfo, setPlantInfo] = useState(null);
-  const [error, setError] = useState(null);
+const hasToken = () => !!localStorage.getItem("google_id_token");
+
+export default function Home() {
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const [isIdentifying, setIsIdentifying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const [plant, setPlant] = useState(null); // {scientificName, commonName, perenualId, watering, sunlight}
   const [imageBase64, setImageBase64] = useState(null);
 
-  // Cleanup image preview URL on unmount or when image changes
+  const [error, setError] = useState(null);
+  const [saveOk, setSaveOk] = useState(false);
+
+  const loggedIn = useMemo(() => hasToken(), [saveOk, plant]); // cheap refresh trigger
+
   useEffect(() => {
     return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-  }, [imagePreview]);
+  }, [previewUrl]);
 
-  const handleImageSelect = (file) => {
-    if (file && file.type.startsWith("image/")) {
-      // Cleanup previous preview URL
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
-      setPlantInfo(null);
-      setError(null);
-      setSaveSuccess(false);
-    } else {
-      setError("Please select a valid image file");
+  function resetResult() {
+    setPlant(null);
+    setImageBase64(null);
+    setSaveOk(false);
+    setError(null);
+  }
+
+  function handlePickFile(file) {
+    if (!file || !file.type?.startsWith("image/")) {
+      setError("pick an image file");
+      return;
     }
-  };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    handleImageSelect(file);
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const handleFileInput = (e) => {
-    const file = e.target.files[0];
-    handleImageSelect(file);
-  };
-
-  // const handleIdentify = async () => {
-  //   if (!image) {
-  //     setError('Please select an image first');
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   setError(null);
-  //   setSaveSuccess(false);
-
-  //   try {
-  //     const result = await api.identifyPlant(image);
-  //     setPlantInfo(result);
-  //   } catch (err) {
-  //     setError(err.message || 'Failed to identify plant. Please try again.');
-  //     setPlantInfo(null);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // const handleIdentify = async () => {
-  //   // if (!image) {
-  //   //   setError("Please select an image first");
-  //   //   return;
-  //   // }
-
-  //   // setIsLoading(true);
-  //   // setError(null);
-  //   // setSaveSuccess(false);
-
-  //   // try {
-  //   //   const result = await api.identifyPlant(image);
-  //   //   setPlantInfo(result);
-  //   // } catch (err) {
-  //   //   setError(err.message || "Failed to identify plant. Please try again.");
-  //   //   setPlantInfo(null);
-  //   // } finally {
-  //   //   setIsLoading(false);
-  //   // }
-  // const { plant, imageBase64 } = await identifyPlant(selectedFile);
-  // setPlant(plant);
-  // setImageBase64(imageBase64);
-  // };
-
-const handleSave = async () => {
-  await savePlant(plant, imageBase64);
-  alert("Saved!");
-  };
-const handleIdentify = async () => {
-  if (!image) {
-    setError("Please select an image first");
-    return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    resetResult();
   }
 
-  setIsLoading(true);
-  setError(null);
-  setSaveSuccess(false);
+  async function handleIdentify() {
+    if (!imageFile) {
+      setError("select an image first");
+      return;
+    }
 
-  try {
-    const { plant, imageBase64 } = await api.identifyPlant(image);
-    setPlantInfo(plant);
-    setImageBase64(imageBase64); // ✅ now safe to use
-  } catch (err) {
-    setError(err.message || "Failed to identify plant. Please try again.");
-    setPlantInfo(null);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsIdentifying(true);
+    setError(null);
+    setSaveOk(false);
 
-  const handleSavePlant = async () => {
-  // Check if a plant has been identified
-  if (!plantInfo) {
-    setError("No plant to save. Please identify a plant first.");
-    return;
-  }
-
-  // For now, ignore auth (or keep your auth check if you want)
-  // if (!auth.isAuthenticated()) {
-  //   setError("Please login to save plants");
-  //   return;
-  // }
-
-  // Ensure we have the base64 image from identify
-  if (!imageBase64) {
-    setError("No image available to save.");
-    return;
+    try {
+      const res = await identifyPlant(imageFile);
+      setPlant(res.plant);
+      setImageBase64(res.imageBase64);
+    } catch (e) {
+      setError(e?.message || "identify failed");
+      setPlant(null);
+      setImageBase64(null);
+    } finally {
+      setIsIdentifying(false);
+    }
   }
 
-  setIsSaving(true);
-  setError(null);
+  async function handleSave() {
+    if (!plant || !imageBase64) {
+      setError("identify first");
+      return;
+    }
+    if (!hasToken()) {
+      setError("login first (google token missing)");
+      return;
+    }
 
-  try {
-    // Pass both plant info and base64 image to the API
-    await api.savePlant(plantInfo, imageBase64);
+    setIsSaving(true);
+    setError(null);
 
-    setSaveSuccess(true);
-    // Automatically reset success after 3 seconds
-    setTimeout(() => setSaveSuccess(false), 3000);
-  } catch (err) {
-    setError(err.message || "Failed to save plant. Please try again.");
-  } finally {
-    setIsSaving(false);
+    try {
+      await savePlant(plant, imageBase64);
+      setSaveOk(true);
+      setTimeout(() => setSaveOk(false), 2000);
+    } catch (e) {
+      setError(e?.message || "save failed");
+    } finally {
+      setIsSaving(false);
+    }
   }
-};
 
   return (
     <div className="home-container">
       <div className="home-content">
         <h1 className="home-title">Identify Your Plant</h1>
-        <p className="home-subtitle">
-          Upload or drop an image to discover what plant you have
-        </p>
 
-        {/* Image Upload Area */}
         <div
           className="upload-area"
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handlePickFile(e.dataTransfer.files?.[0]);
+          }}
         >
-          {imagePreview ? (
+          {previewUrl ? (
             <div className="image-preview-container">
-              <img src={imagePreview} alt="Preview" className="image-preview" />
+              <img src={previewUrl} alt="preview" className="image-preview" />
               <button
                 className="btn-remove-image"
                 onClick={() => {
-                  if (imagePreview) {
-                    URL.revokeObjectURL(imagePreview);
-                  }
-                  setImage(null);
-                  setImagePreview(null);
-                  setPlantInfo(null);
-                  setError(null);
+                  if (previewUrl) URL.revokeObjectURL(previewUrl);
+                  setImageFile(null);
+                  setPreviewUrl(null);
+                  resetResult();
                 }}
               >
-                Remove Image
+                remove
               </button>
             </div>
           ) : (
             <div className="upload-placeholder">
               <div className="upload-icon">📷</div>
-              <p>Drag and drop your plant image here</p>
+              <p>drag & drop an image</p>
               <p className="upload-or">or</p>
               <label htmlFor="file-input" className="btn-upload">
-                Choose File
+                choose file
               </label>
               <input
                 id="file-input"
                 type="file"
                 accept="image/*"
-                onChange={handleFileInput}
                 className="file-input"
+                onChange={(e) => handlePickFile(e.target.files?.[0])}
               />
             </div>
           )}
         </div>
 
-        {/* Identify Button */}
-        {image && !plantInfo && (
-          <button
-            className="btn-identify"
-            onClick={handleIdentify}
-            disabled={isLoading}
-          >
-            {isLoading ? "Identifying..." : "Identify Plant"}
+        {imageFile && !plant && (
+          <button className="btn-identify" onClick={handleIdentify} disabled={isIdentifying}>
+            {isIdentifying ? "identifying..." : "identify"}
           </button>
         )}
 
-        {/* Error Message */}
         {error && <div className="error-message">{error}</div>}
 
-        {/* Plant Information */}
-        {plantInfo && (
+        {plant && (
           <div className="plant-info-card">
-            <h2 className="plant-name">{plantInfo.name || "Plant Name"}</h2>
+            <h2 className="plant-name">
+              {plant.commonName || plant.scientificName || "unknown"}
+            </h2>
 
-            {plantInfo.watering && (
+            {plant.scientificName && (
               <div className="info-section">
-                <h3>💧 Watering Instructions</h3>
-                <p>{plantInfo.watering}</p>
+                <h3>scientific name</h3>
+                <p>{plant.scientificName}</p>
               </div>
             )}
 
-            {plantInfo.disease && (
+            {plant.watering && (
               <div className="info-section">
-                <h3>🦠 Disease Information</h3>
-                <p>{plantInfo.disease}</p>
+                <h3>💧 watering</h3>
+                <p>{plant.watering}</p>
               </div>
             )}
 
-            {plantInfo.care && (
+            {Array.isArray(plant.sunlight) && plant.sunlight.length > 0 && (
               <div className="info-section">
-                <h3>🌿 Care Instructions</h3>
-                <p>{plantInfo.care}</p>
+                <h3>☀️ sunlight</h3>
+                <p>{plant.sunlight.join(", ")}</p>
               </div>
             )}
 
-            {auth.isAuthenticated() ? (
-              <button
-                className="btn-save"
-                onClick={handleSavePlant}
-                disabled={isSaving || saveSuccess}
-              >
-                {isSaving
-                  ? "Saving..."
-                  : saveSuccess
-                  ? "✓ Saved!"
-                  : "Save to My Plants"}
+            {loggedIn ? (
+              <button className="btn-save" onClick={handleSave} disabled={isSaving || saveOk}>
+                {isSaving ? "saving..." : saveOk ? "✓ saved" : "save"}
               </button>
             ) : (
               <p className="login-prompt">
-                <a href="/login">Login</a>
+                 login first to save (<Link to="/login">google login</Link>)
               </p>
+
             )}
           </div>
         )}
@@ -273,5 +190,3 @@ const handleIdentify = async () => {
     </div>
   );
 }
-
-export default Home;

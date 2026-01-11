@@ -30,3 +30,45 @@ my_user = {
 
 if __name__ == '__main__':
     save_user(my_user)
+
+
+
+
+
+
+#     cat > save_user.py <<'PY'
+# import boto3
+# from datetime import datetime
+
+# def save_user(google_user):
+#     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+#     table = dynamodb.Table('PlantsRecognitionUsers')
+
+#     now = datetime.utcnow().isoformat()
+
+#     table.put_item(
+#         Item={
+#             "userId": f"google_{google_user['sub']}",
+#             "email": google_user["email"],
+#             "name": google_user.get("name", ""),
+#             "picture": google_user.get("picture", ""),
+#             "createdAt": now,
+#             "lastLogin": now
+#         },
+#         ConditionExpression="attribute_not_exists(userId)"
+#     )
+
+#     print("User saved")
+
+# my_user = {
+#     "sub": "109876543210987654321",
+#     "email": "chenbrown91@gmail.com",
+#     "name": "Chen Brown",
+#     "picture": "https://lh3.googleusercontent.com/a-/AOh14GhExample",
+# }
+
+# if __name__ == "__main__":
+#     save_user(my_user)
+# PY
+
+# python3 save_user.py

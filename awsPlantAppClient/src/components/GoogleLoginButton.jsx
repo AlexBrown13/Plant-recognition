@@ -10,7 +10,7 @@ export default function GoogleLoginButton() {
         console.log("User info:", decoded);
 
         // Save token
-        localStorage.setItem("googleIdToken", credentialResponse.credential);
+        localStorage.setItem("google_id_token", credentialResponse.credential);
       }}
       onError={() => {
         console.log("Login Failed");

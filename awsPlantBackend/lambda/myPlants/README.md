@@ -1,106 +1,60 @@
-# plant-recognition-my-plants Lambda
+# my-plants Lambda
 
-This AWS Lambda function allows you to query the `PlantsRecognition` DynamoDB table for a user's plants based on their `userId`. It is designed to be used as a backend endpoint, for example, in a React or other frontend application.
-
----
-
-## Table of Contents
-
-- [Requirements](#requirements)
-- [Environment Variables](#environment-variables)
-- [DynamoDB Table Setup](#dynamodb-table-setup)
-- [Lambda Function](#lambda-function)
-- [Example Request](#example-request)
-- [Example Response](#example-response)
-- [Error Handling](#error-handling)
-- [CORS](#cors)
+AWS Lambda for **GET /my-plants**.  
+Returns all plants saved by the **authenticated Google user** with **presigned S3 image URLs**.
 
 ---
 
-## Requirements
-
-- Python 3.9+ (Lambda runtime)
-- AWS SDK for Python (`boto3`)
-- DynamoDB table named `PlantsRecognition`
-- IAM role with permissions:
-  - `dynamodb:Query`
-  - `dynamodb:Scan` (optional)
-  - `logs:CreateLogGroup`
-  - `logs:CreateLogStream`
-  - `logs:PutLogEvents`
+## Runtime
+- Python **3.10+**
+- No external dependencies (`boto3` is built-in)
 
 ---
 
 ## Environment Variables
 
-The Lambda function requires the following environment variable:
-
-| Name           | Description                     |
-| -------------- | ------------------------------- |
-| `PLANTS_TABLE` | The name of your DynamoDB table |
-
-Example in Lambda console:
+PLANTS_TABLE=PlantsRecognition
+BUCKET_NAME=plant-recognition-images-1-7-2026
 
 ---
 
-## DynamoDB Table Setup
+## Authentication
 
-The table must have `userId` as the **Partition Key**. Optional additional fields:
+Header:Authorization: Bearer <google_id_token>
+User ID is derived as:google_<sub>
 
-- `plantId` (if multiple plants per user, as **Sort Key**)
-- `commonName`
-- `watering`
-- `sunlight`
-
-Example schema:
-
-| Attribute Name | Type | Key Type      |
-| -------------- | ---- | ------------- |
-| userId         | S    | Partition Key |
-| plantId        | S    | Sort Key      |
 
 ---
 
-## Lambda Function
+## DynamoDB Schema
 
-The Lambda function `lambda_handler`:
+- `userId` (S) — partition key  
+- `perenualId` (N) — sort key  
 
-- Expects a JSON payload with `userId`.
-- Queries the DynamoDB table for all items belonging to that user.
-- Returns a JSON response containing the list of plants and the count.
+Other fields:
+`scientificName`, `commonName`, `watering`, `sunlight[]`, `imageKey`, `createdAt`
+
+---
+
+## Endpoint
+
+- **GET** `/my-plants`
+- No request body
+
+Returns presigned `imageUrl` for each plant.
+
+---
 
 ## Example Response
 
+```json
 {
-"userId": "google_109876543210987654321",
-"count": 2,
-"plants": [
-{
-"plantId": "1",
-"commonName": "Fiddle Leaf Fig",
-"watering": "Once a week",
-"sunlight": "Indirect light"
-},
-{
-"plantId": "2",
-"commonName": "Snake Plant",
-"watering": "Every 2 weeks",
-"sunlight": "Low to bright light"
-}
-]
+  "plants": [
+    {
+      "perenualId": 223,
+      "commonName": "Sweet Briar",
+      "imageUrl": "https://s3-presigned..."
+    }
+  ]
 }
 
-## Error Handling
-
-Missing userId:
-
-{
-"error": "missing userId"
-}
-
-Server error (DynamoDB query fails, etc.):
-
-{
-"error": "server error",
-"message": "Detailed exception message"
-}

@@ -14,36 +14,31 @@ BUCKET_NAME = os.environ["BUCKET_NAME"]
 
 table = dynamodb.Table(PLANTS_TABLE)
 
-GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-
-
 def lambda_handler(event, context):
     try:
         # 1) read bearer token
-        auth = event["headers"].get("Authorization")
-        if not auth:
-            return resp(401, "Missing Authorization header")
+        headers = event.get("headers") or {}
+        auth = headers.get("authorization") or headers.get("Authorization") or ""
+        if not auth.startswith("Bearer "):
+            return resp(401, {"error": "missing Authorization Bearer token"})
 
-        access_token = auth.replace("Bearer ", "")
+        id_token = auth[len("Bearer "):].strip()
 
-        # Verify token by calling Google
-        req = urllib.request.Request(
-            GOOGLE_USERINFO_URL,
-            headers={"Authorization": f"Bearer {access_token}"}
-        )
+        # 2) verify token with google -> get sub
+        tokeninfo = google_tokeninfo(id_token)
+        sub = tokeninfo.get("sub")
+        if not sub:
+            return resp(401, {"error": "invalid token (no sub)"})
 
-        with urllib.request.urlopen(req) as res:
-            userinfo = json.loads(res.read())
-
-        #user_id = userinfo["sub"]
-        user_id = f"google_{userinfo['sub']}"
+        user_id = f"google_{sub}"
 
         # 3) query dynamodb by userId (PK)
         result = table.query(
             KeyConditionExpression=Key("userId").eq(user_id)
         )
- 
+
         items = convert_decimal(result.get("Items", []))
+
         # 4) attach presigned imageUrl
         plants = []
         for it in items:
@@ -58,7 +53,6 @@ def lambda_handler(event, context):
     except Exception as e:
         print("ERROR:", str(e))
         return resp(500, {"error": "server error", "message": str(e)})
-
 
 def google_tokeninfo(id_token: str) -> dict:
     # GET https://oauth2.googleapis.com/tokeninfo?id_token=...
