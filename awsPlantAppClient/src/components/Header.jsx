@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -9,12 +9,14 @@ function Header() {
   const { user, logout, login } = useContext(UserContext);
   const API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
 
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+
   const googleLogin = useGoogleLogin({
     scope: "openid email profile",
     onSuccess: async (tokenResponse) => {
       const accessToken = tokenResponse.access_token;
 
-      const res = await fetch(`${API_SAVE_USER}prod/save-user`, {
+      const res = await fetch(`${API_SAVE_USER}/prod/save-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,16 +25,23 @@ function Header() {
       });
       const userData = await res.json();
       login(userData, accessToken);
+
+      if (pendingNavigation) {
+        navigate(pendingNavigation);
+        setPendingNavigation(null);
+      }
     },
     onError: () => {
       console.log("Google login failed");
     },
   });
 
-  const handleMyPlantsClick = () => {
+  const handleMyPlantsClick = (e) => {
+    e.preventDefault();
+
     if (!user) {
+      setPendingNavigation("/my-plants");
       googleLogin();
-      navigate("/my-plants");
     } else {
       navigate("/my-plants");
     }
