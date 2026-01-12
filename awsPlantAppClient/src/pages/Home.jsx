@@ -155,7 +155,7 @@ export default function Home() {
 
             {plant.scientificName && (
               <div className="info-section">
-                <h3>scientific name</h3>
+                <h3>🔬 scientific name</h3>
                 <p>{plant.scientificName}</p>
               </div>
             )}

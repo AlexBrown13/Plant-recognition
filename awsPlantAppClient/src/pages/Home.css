@@ -86,7 +86,14 @@
 
 .image-preview-container {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.image-preview-container button {
+  
+  width:15%
 }
 
 .image-preview {
