@@ -23,6 +23,8 @@ function Header() {
     navigate("/my-plants");
   };
 
+  console.log("userH", user);
+
   return (
     <header className="header">
       <div className="header-container">
@@ -35,14 +37,28 @@ function Header() {
             Home
           </Link>
 
-          <Link to="/my-plants" onClick={handleMyPlantsClick} className="nav-link">
+          <Link
+            to="/my-plants"
+            onClick={handleMyPlantsClick}
+            className="nav-link"
+          >
             My Plants
           </Link>
+
+          {hasToken() && user?.email === "rupcgroup25.6@gmail.com" && (
+            <Link to="/admin" className="nav-link">
+              Admin
+            </Link>
+          )}
 
           {hasToken() ? (
             <>
               {user?.picture ? (
-                <img src={user.picture} alt={user.name || "user"} className="profile-icon" />
+                <img
+                  src={user.picture}
+                  alt={user.name || "user"}
+                  className="profile-icon"
+                />
               ) : null}
 
               <button

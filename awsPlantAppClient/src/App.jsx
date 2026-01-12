@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Home from "./pages/Home";
 import MyPlants from "./pages/MyPlants";
 import LoginGoogle from "./pages/LoginGoogle";
+import Admin from "./pages/Admin";
 import "./App.css";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/my-plants" element={<MyPlants />} />
             <Route path="/login" element={<LoginGoogle />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
       </div>
