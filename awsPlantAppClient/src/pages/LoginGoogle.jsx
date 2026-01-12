@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import { saveUser } from "../utils/api";
 
 export default function LoginGoogle() {
   const navigate = useNavigate();
@@ -11,20 +12,26 @@ export default function LoginGoogle() {
   return (
     <div style={{ display: "flex", justifyContent: "center", marginTop: 100 }}>
       <GoogleLogin
-        onSuccess={(credentialResponse) => {
+        onSuccess={async (credentialResponse) => {
           const idToken = credentialResponse?.credential;
           if (!idToken) {
             alert("missing google credential");
             return;
           }
 
-          // decode for UI (name, picture, email, sub)
-          const user = jwtDecode(idToken);
+          // quick local login (for UI)
+          const decoded = jwtDecode(idToken);
+          login(decoded, idToken);
 
-          // store both consistently
-          login(user, idToken);
+          // sync / create user in your DB (lambda)
+          try {
+            const saved = await saveUser(); // should return user record
+            login(saved, idToken); // replace with canonical db record
+          } catch (e) {
+            console.log("save-user failed:", e);
+            // still logged in locally even if db call fails
+          }
 
-          // if you want redirect back, keep it simple:
           const next = localStorage.getItem("post_login_redirect");
           if (next) {
             localStorage.removeItem("post_login_redirect");

@@ -1,4 +1,5 @@
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const VITE_API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
 
 const getIdToken = () => localStorage.getItem("google_id_token");
 
@@ -54,4 +55,20 @@ export async function getMyPlants() {
 
   if (!res.ok) throw new Error("Fetch plants failed");
   return res.json();
+}
+
+
+export async function saveUser() {
+  const token = localStorage.getItem("google_id_token");
+  if (!token) throw new Error("missing google_id_token");
+
+  const res = await fetch(`${VITE_API_SAVE_USER}/save-user`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("save-user failed");
+  return res.json(); // should return user record
 }
