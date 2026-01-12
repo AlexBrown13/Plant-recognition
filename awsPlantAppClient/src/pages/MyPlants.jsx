@@ -79,7 +79,11 @@ export default function MyPlants() {
                 className="plant-card"
               >
                 {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={title} className="plant-card-image" />
+                  <img
+                    src={p.imageUrl}
+                    alt={title}
+                    className="plant-card-image"
+                  />
                 ) : (
                   <div className="plant-card-image placeholder">no image</div>
                 )}
