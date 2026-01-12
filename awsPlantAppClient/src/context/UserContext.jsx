@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export const UserContext = createContext();
 
@@ -10,15 +10,17 @@ export function UserProvider({ children }) {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const login = (userData, token) => {
+  // userData = decoded jwt or object from backend
+  // idToken = google id token (jwt string)
+  const login = (userData, idToken) => {
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("googleIdToken", token);
+    localStorage.setItem("google_id_token", idToken);
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem("user");
-    localStorage.removeItem("googleIdToken");
+    localStorage.removeItem("google_id_token");
     setUser(null);
   };
 

@@ -12,7 +12,8 @@ export default function MyPlants() {
   useEffect(() => {
     const token = localStorage.getItem("google_id_token");
     if (!token) {
-      navigate("/login"); // your google login page
+      localStorage.setItem("post_login_redirect", "/my-plants");
+      navigate("/login");
       return;
     }
 
@@ -70,8 +71,7 @@ export default function MyPlants() {
         <div className="plants-grid">
           {plants.map((p) => {
             const title = p.commonName || p.scientificName || "unknown";
-            const subtitle =
-              p.commonName && p.scientificName ? p.scientificName : null;
+            const subtitle = p.commonName && p.scientificName ? p.scientificName : null;
 
             return (
               <div
