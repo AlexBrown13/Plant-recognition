@@ -13,8 +13,8 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginGoogle />} />
             <Route path="/my-plants" element={<MyPlants />} />
+            <Route path="/login" element={<LoginGoogle />} />
           </Routes>
         </main>
       </div>

@@ -1,4 +1,3 @@
-
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const getIdToken = () => localStorage.getItem("google_id_token");
@@ -23,7 +22,8 @@ export async function identifyPlant(imageFile) {
 
   if (!res.ok) throw new Error("Identify failed");
 
-  return { plant: await res.json(), imageBase64: base64 };
+  const plant = await res.json();
+  return { plant, imageBase64: base64 };
 }
 
 export async function savePlant(plant, imageBase64) {

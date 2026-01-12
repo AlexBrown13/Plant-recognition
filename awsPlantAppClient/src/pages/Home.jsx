@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { identifyPlant, savePlant } from "../utils/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 
 const hasToken = () => !!localStorage.getItem("google_id_token");
 
 export default function Home() {
+  const navigate = useNavigate();
+
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -18,7 +20,8 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [saveOk, setSaveOk] = useState(false);
 
-  const loggedIn = useMemo(() => hasToken(), [saveOk, plant]); // cheap refresh trigger
+  // new: simple + correct (no weird memo triggers)
+  const loggedIn = hasToken();
 
   useEffect(() => {
     return () => {
@@ -73,8 +76,11 @@ export default function Home() {
       setError("identify first");
       return;
     }
+
     if (!hasToken()) {
-      setError("login first (google token missing)");
+      // new: redirect to login, then back home
+      localStorage.setItem("post_login_redirect", "/");
+      navigate("/login");
       return;
     }
 
@@ -140,7 +146,11 @@ export default function Home() {
         </div>
 
         {imageFile && !plant && (
-          <button className="btn-identify" onClick={handleIdentify} disabled={isIdentifying}>
+          <button
+            className="btn-identify"
+            onClick={handleIdentify}
+            disabled={isIdentifying}
+          >
             {isIdentifying ? "identifying..." : "identify"}
           </button>
         )}
@@ -155,7 +165,7 @@ export default function Home() {
 
             {plant.scientificName && (
               <div className="info-section">
-                <h3>scientific name</h3>
+                <h3>🔬 scientific name</h3>
                 <p>{plant.scientificName}</p>
               </div>
             )}
@@ -175,14 +185,24 @@ export default function Home() {
             )}
 
             {loggedIn ? (
-              <button className="btn-save" onClick={handleSave} disabled={isSaving || saveOk}>
+              <button
+                className="btn-save"
+                onClick={handleSave}
+                disabled={isSaving || saveOk}
+              >
                 {isSaving ? "saving..." : saveOk ? "✓ saved" : "save"}
               </button>
             ) : (
               <p className="login-prompt">
-                 login first to save (<Link to="/login">google login</Link>)
+                login first to save (
+                <Link
+                  to="/login"
+                  onClick={() => localStorage.setItem("post_login_redirect", "/")}
+                >
+                  google login
+                </Link>
+                )
               </p>
-
             )}
           </div>
         )}

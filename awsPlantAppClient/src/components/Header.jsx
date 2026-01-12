@@ -1,41 +1,26 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
-import { useGoogleLogin } from "@react-oauth/google";
 import "./Header.css";
 
 function Header() {
   const navigate = useNavigate();
-  const { user, logout, login } = useContext(UserContext);
-  const API_SAVE_USER = import.meta.env.VITE_API_SAVE_USER;
+  const { user, logout } = useContext(UserContext);
 
-  const googleLogin = useGoogleLogin({
-    scope: "openid email profile",
-    onSuccess: async (tokenResponse) => {
-      const accessToken = tokenResponse.access_token;
+  const [pendingNavigation, setPendingNavigation] = useState(null);
 
-      const res = await fetch(`${API_SAVE_USER}prod/save-user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const userData = await res.json();
-      login(userData, accessToken);
-    },
-    onError: () => {
-      console.log("Google login failed");
-    },
-  });
+  const hasToken = () => !!localStorage.getItem("google_id_token");
 
-  const handleMyPlantsClick = () => {
-    if (!user) {
-      googleLogin();
-      navigate("/my-plants");
-    } else {
-      navigate("/my-plants");
+  const handleMyPlantsClick = (e) => {
+    e.preventDefault();
+
+    if (!hasToken()) {
+      setPendingNavigation("/my-plants");
+      navigate("/login");
+      return;
     }
+
+    navigate("/my-plants");
   };
 
   return (
@@ -44,25 +29,22 @@ function Header() {
         <Link to="/" className="logo">
           🌱 Plant Recognition
         </Link>
+
         <nav className="nav">
           <Link to="/" className="nav-link">
             Home
           </Link>
-          <Link
-            to="/my-plants"
-            onClick={handleMyPlantsClick}
-            className="nav-link"
-          >
+
+          <Link to="/my-plants" onClick={handleMyPlantsClick} className="nav-link">
             My Plants
           </Link>
 
-          {user ? (
+          {hasToken() ? (
             <>
-              <img
-                src={user.picture}
-                alt={user.name}
-                className="profile-icon"
-              />
+              {user?.picture ? (
+                <img src={user.picture} alt={user.name || "user"} className="profile-icon" />
+              ) : null}
+
               <button
                 className="btn-logout"
                 onClick={() => {
@@ -74,7 +56,13 @@ function Header() {
               </button>
             </>
           ) : (
-            <button className="btn-login" onClick={() => googleLogin()}>
+            <button
+              className="btn-login"
+              onClick={() => {
+                setPendingNavigation(null);
+                navigate("/login");
+              }}
+            >
               Login
             </button>
           )}

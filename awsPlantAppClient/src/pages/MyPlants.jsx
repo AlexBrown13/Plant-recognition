@@ -12,7 +12,8 @@ export default function MyPlants() {
   useEffect(() => {
     const token = localStorage.getItem("google_id_token");
     if (!token) {
-      navigate("/login"); // your google login page
+      localStorage.setItem("post_login_redirect", "/my-plants");
+      navigate("/login");
       return;
     }
 
@@ -51,7 +52,9 @@ export default function MyPlants() {
         {error && (
           <div className="error-message">
             {error}
-            <button onClick={load} className="btn-retry">retry</button>
+            <button onClick={load} className="btn-retry">
+              retry
+            </button>
           </div>
         )}
 
@@ -68,11 +71,13 @@ export default function MyPlants() {
         <div className="plants-grid">
           {plants.map((p) => {
             const title = p.commonName || p.scientificName || "unknown";
-            const subtitle =
-              p.commonName && p.scientificName ? p.scientificName : null;
+            const subtitle = p.commonName && p.scientificName ? p.scientificName : null;
 
             return (
-              <div key={`${p.perenualId ?? ""}-${p.imageKey ?? Math.random()}`} className="plant-card">
+              <div
+                key={`${p.perenualId ?? ""}-${p.imageKey ?? Math.random()}`}
+                className="plant-card"
+              >
                 {p.imageUrl ? (
                   <img src={p.imageUrl} alt={title} className="plant-card-image" />
                 ) : (
@@ -81,7 +86,12 @@ export default function MyPlants() {
 
                 <div className="plant-card-content">
                   <h3 className="plant-card-name">{title}</h3>
-                  {subtitle && <div className="plant-card-sub">{subtitle}</div>}
+
+                  {subtitle && (
+                    <div className="plant-card-info">
+                      <strong>🔬 scientific name:</strong> {subtitle}
+                    </div>
+                  )}
 
                   {p.watering && (
                     <div className="plant-card-info">
@@ -94,8 +104,6 @@ export default function MyPlants() {
                       <strong>☀️ sunlight:</strong> {p.sunlight.join(", ")}
                     </div>
                   )}
-
-                
                 </div>
               </div>
             );
