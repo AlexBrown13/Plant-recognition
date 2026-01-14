@@ -31,7 +31,7 @@ in discord
 configure cors:
 
 - allowed origins: `*` (for development)
-- allowed methods: `POST, OPTIONS`
+- allowed methods: `POST, OPTIONS,GET`
 - allowed headers: `Content-Type, Authorization`
 
 ## create (aws console) step-by-step
@@ -81,30 +81,25 @@ configure cors:
 ### my-plants
 
 - method: GET
-- url: <in discord>/my-plants?userId=<google_user_id>
+- url: <in discord>/my-plants
   headers:
-- Content-Type: application/json
 - Authorization: Bearer <google_id_token>
-
-- body (raw json):
 
 ```json
 {
-  "userId": "google_333358543213937353333",
-  "count": 2,
   "plants": [
     {
-      "plantId": "1",
-      "commonName": "Fiddle Leaf Fig",
-      "watering": "Once a week",
-      "sunlight": "Indirect light"
-    },
-    {
-      "plantId": "2",
-      "commonName": "Snake Plant",
-      "watering": "Once every 2 weeks",
-      "sunlight": "Low to bright indirect light"
+      "userId": "google_333358543213937353333",
+      "perenualId": 223,
+      "scientificName": "Rosa rubiginosa",
+      "commonName": "Sweet Briar",
+      "watering": "Average",
+      "sunlight": ["Full Sun"],
+      "imageKey": "google_333358543213937353333/1767802223864-6f82c9279ae668.jpg",
+      "createdAt": "2026-01-11T16:42:10.123Z",
+      "imageUrl": "https://s3-presigned-url..."
     }
   ]
 }
+
 ```
