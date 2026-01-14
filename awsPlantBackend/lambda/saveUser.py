@@ -10,6 +10,7 @@ table = dynamodb.Table(os.environ["USERS_TABLE"])
 
 # OPTION A: verify GOOGLE ID TOKEN (JWT) via tokeninfo
 TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token="
+ADMIN_EMAIL = "rupcgroup25.6@gmail.com"
 
 def lambda_handler(event, context):
     try:
@@ -38,6 +39,8 @@ def lambda_handler(event, context):
         name = userinfo.get("name")
         picture = userinfo.get("picture")
 
+        isAdmin = email == ADMIN_EMAIL
+
         now = datetime.utcnow().isoformat() + "Z"
 
         # Upsert user
@@ -47,6 +50,7 @@ def lambda_handler(event, context):
                 "sub": user_sub,
                 "email": email,
                 "name": name,
+                "isAdmin": isAdmin,
                 "picture": picture,
                 "updatedAt": now,
                 "createdAt": now,  # simple approach; if you want true createdAt, use UpdateItem with if_not_exists
@@ -59,6 +63,7 @@ def lambda_handler(event, context):
             "email": email,
             "name": name,
             "picture": picture,
+            "isAdmin": isAdmin
         })
 
     except Exception as e:
