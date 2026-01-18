@@ -3,32 +3,40 @@ import { identifyPlant, savePlant } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 
+// helper: checks if user is logged in (token in localStorage)
 const hasToken = () => !!localStorage.getItem("google_id_token");
 
 export default function Home() {
   const navigate = useNavigate();
 
+    // ===== file + preview state =====
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+    // ===== loading flags =====
   const [isIdentifying, setIsIdentifying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+    // ===== results =====
   const [plant, setPlant] = useState(null); // {scientificName, commonName, perenualId, watering, sunlight}
   const [imageBase64, setImageBase64] = useState(null);
 
+    // ===== UI feedback =====
   const [error, setError] = useState(null);
   const [saveOk, setSaveOk] = useState(false);
 
-  // new: simple + correct (no weird memo triggers)
+  // (this reads localStorage directly on every render)
   const loggedIn = hasToken();
 
+   // cleanup: when previewUrl changes or component unmounts,
+  // revoke the old object URL to avoid memory leaks
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
+    // clears previous results when user picks a new image or removes it
   function resetResult() {
     setPlant(null);
     setImageBase64(null);
@@ -36,6 +44,7 @@ export default function Home() {
     setError(null);
   }
 
+   // called when user chooses a file OR drops a file
   function handlePickFile(file) {
     if (!file || !file.type?.startsWith("image/")) {
       setError("pick an image file");
@@ -48,6 +57,7 @@ export default function Home() {
     resetResult();
   }
 
+    // calls backend to identify plant
   async function handleIdentify() {
     if (!imageFile) {
       setError("select an image first");
@@ -71,12 +81,14 @@ export default function Home() {
     }
   }
 
+  // saves identified plant + image to backend (S3 etc.)
   async function handleSave() {
     if (!plant || !imageBase64) {
       setError("identify first");
       return;
     }
 
+      // protect save: must be logged in
     if (!hasToken()) {
       // new: redirect to login, then back home
       localStorage.setItem("post_login_redirect", "/");

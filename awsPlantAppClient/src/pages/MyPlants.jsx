@@ -4,9 +4,12 @@ import { getMyPlants } from "../utils/api";
 import "./MyPlants.css";
 
 export default function MyPlants() {
+  // list of plants returned from backend
   const [plants, setPlants] = useState([]);
+  // loading + error UI state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  // for redirecting (login, home, etc.)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,9 +21,8 @@ export default function MyPlants() {
     }
 
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+// fetch the user's saved plants from backend
   async function load() {
     setIsLoading(true);
     setError(null);

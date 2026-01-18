@@ -11,7 +11,7 @@ export default function LoginGoogle() {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", marginTop: 100 }}>
-      <GoogleLogin
+      <GoogleLogin // called when google returns a successful login response
         onSuccess={async (credentialResponse) => {
           const idToken = credentialResponse?.credential;
           if (!idToken) {
@@ -19,10 +19,12 @@ export default function LoginGoogle() {
             return;
           }
 
-          // quick local login (for UI)
+           //quick local login
+          // decode token locally so you can show user name/email/picture immediately
+          // jwtDecode does NOT verify the token, it only decodes it
           const decoded = jwtDecode(idToken);
+           // store user + token in localStorage + state
           login(decoded, idToken);
-
           // sync / create user in your DB (lambda)
           try {
             const saved = await saveUser(); // should return user record

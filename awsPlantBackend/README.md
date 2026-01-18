@@ -1,4 +1,4 @@
-# backend flow (based on your code + readme)
+# backend flow
 
 ## 0) api gateway (http api) — entry point
 - one public base url (stage: `prod`)
