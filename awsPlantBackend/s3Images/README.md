@@ -2,6 +2,14 @@
 
 this project stores user-uploaded plant images in a private s3 bucket.
 
+# 1) frontend sends imageBase64 to savePlant
+# 2) savePlant converts base64 → image bytes
+# 3) savePlant generates S3 key: <userId>/<timestamp>-<random>.jpg
+# 4) savePlant uploads image bytes to private S3 bucket
+# 5) S3 stores the image bytes as an object under that key
+# 6) savePlant stores only imageKey in DynamoDB (not the image)
+# 7) savePlant returns success to the client
+
 ## image handling summary
 
 - frontend sends image as base64 to `POST /identify`

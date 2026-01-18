@@ -5,6 +5,14 @@ import boto3
 import os
 from datetime import datetime
 
+# 1) Client sends request with header: Authorization: Bearer <google_id_token>
+# 2) Lambda extracts the ID token from the Authorization header
+# 3) Lambda sends the token to Google tokeninfo to verify it
+# 4) Google returns user info (sub, email, name, picture)
+# 5) Lambda checks if the email matches ADMIN_EMAIL → sets isAdmin
+# 6) Lambda upserts the user into the Users DynamoDB table
+# 7) Lambda returns the user data to the client
+
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["USERS_TABLE"])
 

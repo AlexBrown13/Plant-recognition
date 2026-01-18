@@ -6,7 +6,7 @@ from datetime import datetime
 TABLE_NAME = "PlantsRecognitionUsers"
 REGION = "us-east-1"
 
-# The default user to insert
+# Default user to insert (seed admin user)
 DEFAULT_USER = {
     "sub": "107314465142826082072",
     "email": "rupcgroup25.6@gmail.com",
@@ -19,11 +19,15 @@ def create_table():
     """Create the DynamoDB table if it doesn't exist"""
     dynamodb = boto3.resource("dynamodb", region_name=REGION)
 
+    # Get all existing table names in this region
     existing_tables = dynamodb.meta.client.list_tables()["TableNames"]
+
+    # If table already exists, return it
     if TABLE_NAME in existing_tables:
         print(f"Table '{TABLE_NAME}' already exists")
         return dynamodb.Table(TABLE_NAME)
-
+    
+    # Otherwise, create the table
     print(f"Creating table '{TABLE_NAME}'...")
     table = dynamodb.create_table(
         TableName=TABLE_NAME,
@@ -53,9 +57,11 @@ def save_user(user):
     }
 
     try:
+        # Insert only if userId does not already exist
         table.put_item(Item=item, ConditionExpression="attribute_not_exists(userId)")
         print(f"User '{item['email']}' saved successfully")
     except ClientError as e:
+        # If the user already exists, DynamoDB throws this error
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
             print(f"User '{item['email']}' already exists")
         else:

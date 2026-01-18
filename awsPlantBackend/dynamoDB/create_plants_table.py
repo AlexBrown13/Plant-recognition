@@ -7,8 +7,8 @@ def create_table():
     params = {
         'TableName': 'PlantsRecognition',
         'KeySchema': [
-            {'AttributeName': 'userId', 'KeyType': 'HASH'},   # PK
-            {'AttributeName': 'perenualId', 'KeyType': 'RANGE'}, #SK
+            {'AttributeName': 'userId', 'KeyType': 'HASH'},   # PK ,data is grouped by userId
+            {'AttributeName': 'perenualId', 'KeyType': 'RANGE'}, #SK, inside each user, items are sorted by perenualId
         ],
         'AttributeDefinitions': [
             {'AttributeName': 'userId', 'AttributeType': 'S'},

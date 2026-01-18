@@ -1,198 +1,3 @@
-// // index.mjs
-// // Node.js 18+
-// // IDENTIFY ONLY (no permanent saving)
-
-// export const handler = async (event) => {
-//   try {
-//     // ===== 1) read image (base64) =====
-//     const base64 = event.isBase64Encoded
-//       ? event.body
-//       : (event.imageBase64 ?? event.body);
-
-//     if (!base64) return resp(400, { error: "no image" });
-
-//     const imageBuffer = Buffer.from(base64, "base64");
-
-//     // ===== 2) PlantNet =====
-//     // const form = new FormData();
-//     // form.append("organs", "leaf");
-//     // form.append(
-//     //   "images",
-//     //   new Blob([imageBuffer], { type: "image/jpeg" }),
-//     //   "plant.jpg"
-//     // );
-
-//     // const plantNetRes = await fetch(
-//     //   `https://my-api.plantnet.org/v2/identify/all?api-key=${process.env.PLANTNET_KEY}`,
-//     //   { method: "POST", body: form }
-//     // );
-
-//     // const plantNetJson = await plantNetRes.json();
-//     // if (!plantNetRes.ok) {
-//     //   return resp(502, { error: "plantnet failed", plantNetJson });
-//     // }
-
-//     // const best = plantNetJson.results?.[0];
-//     // if (!best) return resp(404, { error: "plant not identified" });
-
-//     // const scientificName =
-//     //   best.species?.scientificNameWithoutAuthor ?? null;
-//     // const commonName =
-//     //   best.species?.commonNames?.[0] ?? null;
-
-//     const plantNetRes = await fetch(
-//   `https://my-api.plantnet.org/v2/identify/all?api-key=${process.env.PLANTNET_KEY}`,
-//   { method: "POST", body: form }
-// );
-
-// let plantNetJson;
-// try {
-//   plantNetJson = await plantNetRes.json();
-// } catch {
-//   // If it's not JSON, read as text
-//   const text = await plantNetRes.text();
-//   return resp(502, { error: "PlantNet API did not return JSON", details: text });
-// }
-
-// if (!plantNetRes.ok) {
-//   return resp(502, { error: "plantnet failed", plantNetJson });
-// }
-
-//     // ===== 3) Perenual: find id =====
-//     // const queries = [
-//     //   scientificName,
-//     //   commonName,
-//     //   scientificName?.split(" ")[0],
-//     // ].filter(Boolean);
-
-//     // let plant = null;
-
-//     // for (const q of queries) {
-//     //   const listRes = await fetch(
-//     //     `https://perenual.com/api/v2/species-list?key=${process.env.PERENUAL_KEY}&q=${encodeURIComponent(q)}`
-//     //   );
-//     //   const listJson = await listRes.json();
-//     //   if (listRes.ok && listJson.data?.length) {
-//     //     plant = listJson.data[0];
-//     //     break;
-//     //   }
-//     // }
-
-//     // if (!plant) {
-//     //   return resp(404, {
-//     //     error: "plant not found in perenual",
-//     //     tried: queries,
-//     //   });
-//     // }
-
-//     // ===== 4) Perenual: details =====
-//     // const detailsRes = await fetch(
-//     //   `https://perenual.com/api/v2/species/details/${plant.id}?key=${process.env.PERENUAL_KEY}`
-//     // );
-//     // const details = await detailsRes.json();
-//     // if (!detailsRes.ok) {
-//     //   return resp(502, {
-//     //     error: "perenual details failed",
-//     //     details,
-//     //   });
-//     // }
-
-//     const queries = [
-//   scientificName,
-//   commonName,
-//   scientificName?.split(" ")[0],
-// ].filter(Boolean);
-
-// let plant = null;
-
-// for (const q of queries) {
-//   const listRes = await fetch(
-//     `https://perenual.com/api/v2/species-list?key=${process.env.PERENUAL_KEY}&q=${encodeURIComponent(q)}`
-//   );
-
-//   let listJson;
-//   try {
-//     listJson = await listRes.json(); // try parsing JSON
-//   } catch {
-//     const text = await listRes.text(); // fallback if not JSON
-//     return resp(502, {
-//       error: "Perenual species-list did not return JSON",
-//       details: text,
-//       query: q
-//     });
-//   }
-
-//   if (!listRes.ok) {
-//     return resp(502, {
-//       error: "Perenual species-list API error",
-//       details: listJson,
-//       query: q
-//     });
-//   }
-
-//   if (listJson.data?.length) {
-//     plant = listJson.data[0];
-//     break;
-//   }
-// }
-
-// if (!plant) {
-//   return resp(404, {
-//     error: "Plant not found in Perenual",
-//     tried: queries
-//   });
-// }
-
-// // ===== 4) Perenual: details =====
-// const detailsRes = await fetch(
-//   `https://perenual.com/api/v2/species/details/${plant.id}?key=${process.env.PERENUAL_KEY}`
-// );
-
-// let details;
-// try {
-//   details = await detailsRes.json();
-// } catch {
-//   const text = await detailsRes.text(); // fallback if not JSON
-//   return resp(502, {
-//     error: "Perenual details did not return JSON",
-//     details: text,
-//     plantId: plant.id
-//   });
-// }
-
-// if (!detailsRes.ok) {
-//   return resp(502, {
-//     error: "Perenual details API error",
-//     details: details,
-//     plantId: plant.id
-//   });
-// }
-
-//     // ===== 5) response =====
-//     return resp(200, {
-//       scientificName,
-//       commonName,
-//       perenualId: plant.id,
-//       watering: details.watering ?? null,
-//       sunlight: details.sunlight ?? null
-//     });
-
-//   } catch (e) {
-//     console.error(e);
-//     return resp(500, { error: "server error", message: String(e) });
-//   }
-// };
-
-// const resp = (statusCode, body) => ({
-//   statusCode,
-//   headers: {
-//     "Access-Control-Allow-Origin": "*",
-//     "Access-Control-Allow-Headers": "*",
-//     "Content-Type": "application/json",
-//   },
-//   body: JSON.stringify(body),
-// });
-
 
 // index.mjs
 // Node.js 18+
@@ -201,17 +6,18 @@
 export const handler = async (event) => {
   try {
     // ===== 1) read image (base64) =====
-    let base64 = event.isBase64Encoded
+    let base64 = event.isBase64Encoded //handles both raw base64 in body or { imageBase64: "..." }
       ? event.body
       : (event.imageBase64 ?? event.body);
 
     if (!base64) return resp(400, { error: "no image" });
 
     // allow raw base64 or data url
-    const raw = String(base64).replace(/^data:image\/\w+;base64,/, "");
-    const imageBuffer = Buffer.from(raw, "base64");
+    const raw = String(base64).replace(/^data:image\/\w+;base64,/, ""); //removes data:image/jpeg;base64, if frontend sent a data-url.
+    const imageBuffer = Buffer.from(raw, "base64"); //converts a base64 string into binary image data
 
     // ===== 2) PlantNet (AUTO organ) =====
+    //wraps the image bytes into a JPEG file and attaches it to a form so it can be uploaded to the PlantNet API like a normal file.
     const form = new FormData();
     form.append(
       "images",
@@ -219,7 +25,7 @@ export const handler = async (event) => {
       "plant.jpg"
     );
 
-    const plantNetRes = await fetch(
+    const plantNetRes = await fetch( //calls the first api with the image
       `https://my-api.plantnet.org/v2/identify/all?api-key=${process.env.PLANTNET_KEY}`,
       { method: "POST", body: form }
     );
@@ -228,24 +34,23 @@ export const handler = async (event) => {
     if (!plantNetRes.ok) {
       return resp(502, { error: "plantnet failed", plantNetJson });
     }
-
-    const best = plantNetJson.results?.[0];
+    const best = plantNetJson.results?.[0]; //takes the first result
     if (!best) return resp(404, { error: "plant not identified" });
 
     const scientificName =
-      best.species?.scientificNameWithoutAuthor ?? null;
+      best.species?.scientificNameWithoutAuthor ?? null; //takes the scientific name from the best result
     const commonName =
-      best.species?.commonNames?.[0] ?? null;
+      best.species?.commonNames?.[0] ?? null; //takes the first common name from the array
 
-    // ===== 3) Perenual: find id (normalized queries) =====
-    const sci2 = scientificName
+    // ===== 3) Perenual: find id =====
+    const sci2 = scientificName //takes the first 2 words from sci name
       ?.split(" ")
       .slice(0, 2)
       .join(" ");
 
-    const genus = scientificName?.split(" ")[0];
+    const genus = scientificName?.split(" ")[0]; //take the plant's biology group as a backup for looser search
 
-    const queries = [
+    const queries = [ //looking up all these names
       sci2,        // scientific (2 words)
       commonName,  // common name
       genus,       // genus fallback
@@ -253,7 +58,8 @@ export const handler = async (event) => {
 
     let plant = null;
 
-    for (const q of queries) {
+    //tries each backup search query in order, calls Perenual, and as soon as it finds results it takes the first plant and stops.
+    for (const q of queries) { 
       const listRes = await fetch(
         `https://perenual.com/api/v2/species-list?key=${process.env.PERENUAL_KEY}&q=${encodeURIComponent(q)}`
       );
@@ -264,7 +70,7 @@ export const handler = async (event) => {
       }
     }
 
-    // if perenual finds nothing, still return identification
+    // if perenual finds nothing,return only the name from the first api
     if (!plant) {
       return resp(200, {
         scientificName,
@@ -275,7 +81,8 @@ export const handler = async (event) => {
       });
     }
 
-    // ===== 4) Perenual: details (OPTIONAL) =====
+    // ===== 4) Perenual: details =====
+    //in case perenual has the plant but without care info
     let watering = "No care available";
     let sunlight = ["No care available"]; 
 
@@ -287,11 +94,13 @@ export const handler = async (event) => {
       if (detailsRes.ok) {
         const details = await detailsRes.json();
 
-        if (details?.watering) watering = details.watering;
+        if (details?.watering) watering = details.watering; //update if exists
 
         // sunlight: normalize to array
+          // Case 1: already an array with values → use it
         if (Array.isArray(details?.sunlight) && details.sunlight.length) {
           sunlight = details.sunlight;
+          //Case 2: sunlight is a non-empty string → wrap in array
         } else if (typeof details?.sunlight === "string" && details.sunlight.trim()) {
           sunlight = [details.sunlight.trim()];
         }
@@ -318,9 +127,11 @@ export const handler = async (event) => {
 const resp = (statusCode, body) => ({
   statusCode,
   headers: {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "*",
-    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*", // Allow requests from any origin (CORS)
+    "Access-Control-Allow-Headers": "*",  // Allow any headers from the client
+    "Content-Type": "application/json",  // Tell the client this is JSON
   },
+   // API Gateway expects the body as a STRING
+  // so we convert the JS object to JSON tex
   body: JSON.stringify(body),
 });

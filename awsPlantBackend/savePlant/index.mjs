@@ -6,6 +6,14 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
+// 1) frontend sends plant data + imageBase64 to /save
+// 2) lambda verifies Google token and builds userId
+// 3) lambda parses request body
+// 4) lambda converts imageBase64 → image bytes
+// 5) lambda uploads image bytes to S3
+// 6) lambda saves plant metadata + imageKey to DynamoDB
+// 7) lambda returns success to the client
+
 const s3 = new S3Client({});
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -24,10 +32,12 @@ export const handler = async (event) => {
         );
         if (!googleRes.ok) return resp(401, { error: "Invalid Google token" });
 
+        // sub is Google's unique user id
         const userinfo = await googleRes.json();
         const userId = `google_${userinfo.sub}`;
 
         // ===== 2) parse body =====
+        // Body should contain plant data + imageBase64
         const body = JSON.parse(event.body || "{}");
         const {
             scientificName,
@@ -53,6 +63,7 @@ export const handler = async (event) => {
         const imageBuffer = Buffer.from(raw, "base64");
 
         // ===== 5) upload image to S3 =====
+         // Key format: <userId>/<timestamp>-<random>.jpg
         const imageKey = `${userId}/${Date.now()}-${Math.random()
             .toString(16)
             .slice(2)}.jpg`;
@@ -61,7 +72,7 @@ export const handler = async (event) => {
             new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME,
                 Key: imageKey,
-                Body: imageBuffer,
+                Body: imageBuffer, // the actual image bytes
                 ContentType: "image/jpeg",
             })
         );

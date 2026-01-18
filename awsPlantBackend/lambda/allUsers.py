@@ -5,6 +5,8 @@ import urllib.request
 import urllib.parse
 from decimal import Decimal
 
+#this lambda authenticates a user with Google, checks admin permissions, and returns all users from DynamoDB.
+
 dynamodb = boto3.resource("dynamodb")
 
 USERS_TABLE = os.environ.get("USERS_TABLE", "PlantsRecognitionUsers")
@@ -36,7 +38,7 @@ def lambda_handler(event, context):
             return resp(403, {"error": "user not found"})
 
         user_item = convert_decimal(user_response["Item"])
-        is_admin = user_item.get("isAdmin", False)
+        is_admin = user_item.get("isAdmin", False) #return false if doesn't exist
 
         if not is_admin:
             return resp(403, {"error": "forbidden: admin access required"})
