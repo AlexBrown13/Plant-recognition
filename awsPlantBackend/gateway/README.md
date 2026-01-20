@@ -19,6 +19,7 @@ this api exposes:
 - `POST /save-user` → plant-recognition-save-user lambda
 - `GET /my-plants` → plant-recognition-my-plants lambda
 - `GET /admin` → plant-recognition-allUsers lambda
+- `GET /login` → plant-recognition-my-plants lambda
 
 ## stage
 
@@ -128,6 +129,26 @@ configure cors:
   "name": "John Doe",
   "picture": "https://lh3.googleusercontent.com/...",
   "isAdmin": false
+}
+```
+
+### get-user
+
+- method: GET
+- url: <in discord>/login
+  headers:
+- Authorization: Bearer <google_id_token>
+
+```json
+{
+  "userId": "google_333353533333333333333",
+  "sub": "333353533333333333333",
+  "email": "user@gmail.com",
+  "name": "John Doe",
+  "picture": "https://lh3.googleusercontent.com/...",
+  "isAdmin": false,
+  "createdAt": "2026-01-18T14:32:10Z",
+  "updatedAt": "2026-01-20T17:05:22Z"
 }
 ```
 
